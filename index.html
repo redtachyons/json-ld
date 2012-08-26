@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Json-ld : Ruby JSON-LD reader/writer for RDF.rb" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Json-ld</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/gkellogg/json-ld">View on GitHub</a>
+
+          <h1 id="project_title">Json-ld</h1>
+          <h2 id="project_tagline">Ruby JSON-LD reader/writer for RDF.rb</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/gkellogg/json-ld/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/gkellogg/json-ld/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>JSON-LD reader/writer</h1>
+
+<p><a href="http://json-ld.org/spec/latest/">JSON-LD</a> reader/writer for <a href="http://rubygems.org/gems/rdf">RDF.rb</a> .</p>
+
+<h2>Features</h2>
+
+<p>JSON::LD parses and serializes <a href="http://json-ld.org/spec/latest/">JSON-LD</a> into <a href="http://www.w3.org/RDF/">RDF</a> and implements expansion, compaction and framing API interfaces.</p>
+
+<p>Install with <code>gem install json-ld</code></p>
+
+<h2>Examples</h2>
+
+<pre><code>require 'rubygems'
+require 'json/ld'
+</code></pre>
+
+<h3>Expand a Document</h3>
+
+<pre><code>input = {
+  "@context": {
+    "name": "http://xmlns.com/foaf/0.1/name",
+    "homepage": "http://xmlns.com/foaf/0.1/homepage",
+    "avatar": "http://xmlns.com/foaf/0.1/avatar"
+  },
+  "name": "Manu Sporny",
+  "homepage": "http://manu.sporny.org/",
+  "avatar": "http://twitter.com/account/profile_image/manusporny"
+}
+JSON::LD::API.expand(input) =&gt;
+
+[{
+    "http://xmlns.com/foaf/0.1/name": ["Manu Sporny"],
+    "http://xmlns.com/foaf/0.1/homepage": ["http://manu.sporny.org/"],
+    "http://xmlns.com/foaf/0.1/avatar": ["http://twitter.com/account/profile_image/manusporny"]
+}]
+</code></pre>
+
+<h3>Compact a Document</h3>
+
+<pre><code>input = [{
+    "http://xmlns.com/foaf/0.1/name": ["Manu Sporny"],
+    "http://xmlns.com/foaf/0.1/homepage": ["http://manu.sporny.org/"],
+    "http://xmlns.com/foaf/0.1/avatar": ["http://twitter.com/account/profile_image/manusporny"]
+}]
+
+context = {
+  "@context": {
+    "name": "http://xmlns.com/foaf/0.1/name",
+    "homepage": "http://xmlns.com/foaf/0.1/homepage",
+    "avatar": "http://xmlns.com/foaf/0.1/avatar"
+  }
+}
+
+JSON::LD::API.compact(input, context) =&gt;
+{
+    "@context": {
+        "avatar": "http://xmlns.com/foaf/0.1/avatar",
+        "homepage": "http://xmlns.com/foaf/0.1/homepage",
+        "name": "http://xmlns.com/foaf/0.1/name"
+    },
+    "avatar": "http://twitter.com/account/profile_image/manusporny",
+    "homepage": "http://manu.sporny.org/",
+    "name": "Manu Sporny"
+}
+</code></pre>
+
+<h3>Frame a Document</h3>
+
+<pre><code>input = {
+  "@context": {
+    "Book":         "http://example.org/vocab#Book",
+    "Chapter":      "http://example.org/vocab#Chapter",
+    "contains":     {"@id": "http://example.org/vocab#contains", "@type": "@id"},
+    "creator":      "http://purl.org/dc/terms/creator",
+    "description":  "http://purl.org/dc/terms/description",
+    "Library":      "http://example.org/vocab#Library",
+    "title":        "http://purl.org/dc/terms/title"
+  },
+  "@graph":
+  [{
+    "@id": "http://example.com/library",
+    "@type": "Library",
+    "contains": "http://example.org/library/the-republic"
+  },
+  {
+    "@id": "http://example.org/library/the-republic",
+    "@type": "Book",
+    "creator": "Plato",
+    "title": "The Republic",
+    "contains": "http://example.org/library/the-republic#introduction"
+  },
+  {
+    "@id": "http://example.org/library/the-republic#introduction",
+    "@type": "Chapter",
+    "description": "An introductory chapter on The Republic.",
+    "title": "The Introduction"
+  }]
+}
+
+frame = {
+  "@context": {
+    "Book":         "http://example.org/vocab#Book",
+    "Chapter":      "http://example.org/vocab#Chapter",
+    "contains":     "http://example.org/vocab#contains",
+    "creator":      "http://purl.org/dc/terms/creator",
+    "description":  "http://purl.org/dc/terms/description",
+    "Library":      "http://example.org/vocab#Library",
+    "title":        "http://purl.org/dc/terms/title"
+  },
+  "@type": "Library",
+  "contains": {
+    "@type": "Book",
+    "contains": {
+      "@type": "Chapter"
+    }
+  }
+}
+JSON::LD.frame(input, frame) =&gt;
+{
+  "@context": {
+    "Book": "http://example.org/vocab#Book",
+    "Chapter": "http://example.org/vocab#Chapter",
+    "contains": "http://example.org/vocab#contains",
+    "creator": "http://purl.org/dc/terms/creator",
+    "description": "http://purl.org/dc/terms/description",
+    "Library": "http://example.org/vocab#Library",
+    "title": "http://purl.org/dc/terms/title"
+  },
+  "@graph": [
+    {
+      "@id": "http://example.com/library",
+      "@type": "Library",
+      "contains": {
+        "@id": "http://example.org/library/the-republic",
+        "@type": "Book",
+        "contains": {
+          "@id": "http://example.org/library/the-republic#introduction",
+          "@type": "Chapter",
+          "description": "An introductory chapter on The Republic.",
+          "title": "The Introduction"
+        },
+        "creator": "Plato",
+        "title": "The Republic"
+      }
+    }
+  ]
+}
+</code></pre>
+
+<h3>Turn JSON-LD into RDF (Turtle)</h3>
+
+<pre><code>input = {
+  "@context": {
+    "":       "http://manu.sporny.org/",
+    "foaf":   "http://xmlns.com/foaf/0.1/"
+  },
+  "@id":       "http://example.org/people#joebob",
+  "@type":          "foaf:Person",
+  "foaf:name":      "Joe Bob",
+  "foaf:nick":      { "@list": [ "joe", "bob", "jaybe" ] }
+}
+
+JSON::LD::API.toRDF(input) =&gt;
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+
+&lt;http://example.org/people#joebob&gt; a foaf:Person;
+   foaf:name "Joe Bob";
+   foaf:nick ("joe" "bob" "jaybe") .
+</code></pre>
+
+<h3>Turn RDF into JSON-LD</h3>
+
+<pre><code>input =
+@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+
+&lt;http://manu.sporny.org/#me&gt; a foaf:Person;
+   foaf:knows [ a foaf:Person;
+     foaf:name "Gregg Kellogg"];
+   foaf:name "Manu Sporny" .
+
+context =
+{
+  "@context": {
+    "":       "http://manu.sporny.org/",
+    "foaf":   "http://xmlns.com/foaf/0.1/"
+  }
+}
+
+JSON::LD::fromRDF(input, context) =&gt;
+{
+  "@context": {
+    "":       "http://manu.sporny.org/",
+    "foaf":   "http://xmlns.com/foaf/0.1/"
+  },
+  "@id":       ":#me",
+  "@type":          "foaf:Person",
+  "foaf:name":      "Manu Sporny",
+  "foaf:knows": {
+    "@type":          "foaf:Person",
+    "foaf:name":      "Gregg Kellogg"
+  }
+}
+</code></pre>
+
+<h2>RDF Reader and Writer</h2>
+
+<p>{JSON::LD} also acts as a normal RDF reader and writer, using the standard RDF.rb reader/writer interfaces:</p>
+
+<pre><code>graph = RDF::Graph.load("etc/doap.jsonld", :format =&gt; :jsonld)
+graph.dump(:jsonld, :standard_prefixes =&gt; true)
+</code></pre>
+
+<h2>Documentation</h2>
+
+<p>Full documentation available on <a href="http://rubydoc.info/gems/json-ld/file/README.markdown">RubyDoc</a></p>
+
+<h3>Principle Classes</h3>
+
+<ul>
+<li>{JSON::LD}
+
+<ul>
+<li>{JSON::LD::API}</li>
+<li>{JSON::LD::Compact}</li>
+<li>{JSON::LD::EvaluationContext}</li>
+<li>{JSON::LD::Format}</li>
+<li>{JSON::LD::Frame}</li>
+<li>{JSON::LD::FromTriples}</li>
+<li>{JSON::LD::Reader}</li>
+<li>{JSON::LD::Triples}</li>
+<li>{JSON::LD::Writer}</li>
+</ul>
+</li>
+</ul><h2>Dependencies</h2>
+
+<ul>
+<li>
+<a href="http://ruby-lang.org/">Ruby</a> (&gt;= 1.8.7) or (&gt;= 1.8.1 with <a href="http://rubygems.org/gems/backports">Backports</a>)</li>
+<li>
+<a href="http://rubygems.org/gems/rdf">RDF.rb</a> (&gt;= 0.3.4)</li>
+<li>
+<a href="https://rubygems.org/gems/json">JSON</a> (&gt;= 1.5.1)</li>
+</ul><h2>Installation</h2>
+
+<p>The recommended installation method is via <a href="http://rubygems.org/">RubyGems</a>.
+To install the latest official release of the <code>JSON-LD</code> gem, do:</p>
+
+<pre><code>% [sudo] gem install json-ld
+</code></pre>
+
+<h2>Download</h2>
+
+<p>To get a local working copy of the development repository, do:</p>
+
+<pre><code>% git clone git://github.com/ruby-rdf/json-ld.git
+</code></pre>
+
+<h2>Mailing List</h2>
+
+<ul>
+<li><a href="http://lists.w3.org/Archives/Public/public-rdf-ruby/">http://lists.w3.org/Archives/Public/public-rdf-ruby/</a></li>
+</ul><h2>Author</h2>
+
+<ul>
+<li>
+<a href="http://github.com/gkellogg">Gregg Kellogg</a> - <a href="http://kellogg-assoc.com/">http://kellogg-assoc.com/</a>
+</li>
+</ul><h2>Contributing</h2>
+
+<ul>
+<li>Do your best to adhere to the existing coding conventions and idioms.</li>
+<li>Don't use hard tabs, and don't leave trailing whitespace on any line.</li>
+<li>Do document every method you add using <a href="http://yardoc.org/">YARD</a> annotations. Read the
+<a href="http://rubydoc.info/docs/yard/file/docs/GettingStarted.md">tutorial</a> or just look at the existing code for examples.</li>
+<li>Don't touch the <code>.gemspec</code>, <code>VERSION</code> or <code>AUTHORS</code> files. If you need to
+change them, do so on your private branch only.</li>
+<li>Do feel free to add yourself to the <code>CREDITS</code> file and the corresponding
+list in the the <code>README</code>. Alphabetical order applies.</li>
+<li>Do note that in order for us to merge any non-trivial changes (as a rule
+of thumb, additions larger than about 15 lines of code), we need an
+explicit <a href="http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html">public domain dedication</a> on record from you.</li>
+</ul><h2>License</h2>
+
+<p>This is free and unencumbered public domain software. For more information,
+see <a href="http://unlicense.org/">http://unlicense.org/</a> or the accompanying {file:UNLICENSE} file.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Json-ld maintained by <a href="https://github.com/gkellogg">gkellogg</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
