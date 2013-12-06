@@ -16,14 +16,14 @@
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/gkellogg/json-ld">View on GitHub</a>
+          <a id="forkme_banner" href="https://github.com/ruby-rdf/json-ld">View on GitHub</a>
 
           <h1 id="project_title">Json-ld</h1>
           <h2 id="project_tagline">Ruby JSON-LD reader/writer for RDF.rb</h2>
 
             <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/gkellogg/json-ld/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/gkellogg/json-ld/tarball/master">Download this project as a tar.gz file</a>
+              <a class="zip_download_link" href="https://github.com/ruby-rdf/json-ld/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/ruby-rdf/json-ld/tarball/master">Download this project as a tar.gz file</a>
             </section>
         </header>
     </div>
@@ -31,25 +31,32 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>JSON-LD reader/writer</h1>
+        <h1>
+<a name="json-ld-readerwriter" class="anchor" href="#json-ld-readerwriter"><span class="octicon octicon-link"></span></a>JSON-LD reader/writer</h1>
 
-<p><a href="http://json-ld.org/spec/latest/">JSON-LD</a> reader/writer for <a href="http://rubygems.org/gems/rdf">RDF.rb</a> .</p>
+<p><a href="http://www.w3.org/TR/json-ld/" title="JSON-LD 1.0">JSON-LD</a> reader/writer for <a href="http://rubygems.org/gems/rdf">RDF.rb</a> and fully conforming <a href="http://www.w3.org/TR/json-ld-api/" title="JSON-LD 1.0 Processing Algorithms and API">JSON-LD API</a> processor. Additionally this gem implements <a href="http://json-ld.org/spec/latest/json-ld-framing/" title="JSON-LD Framing 1.0">JSON-LD Framing</a>.</p>
 
-<h2>Features</h2>
+<p><a href="http://badge.fury.io/rb/json-ld"><img src="https://badge.fury.io/rb/json-ld.png" alt="Gem Version"></a>
+<a href="http://travis-ci.org/ruby-rdf/json-ld"><img src="https://secure.travis-ci.org/ruby-rdf/json-ld.png?branch=master" alt="Build Status"></a></p>
 
-<p>JSON::LD parses and serializes <a href="http://json-ld.org/spec/latest/">JSON-LD</a> into <a href="http://www.w3.org/RDF/">RDF</a> and implements expansion, compaction and framing API interfaces.</p>
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<p>JSON::LD parses and serializes <a href="http://www.w3.org/TR/json-ld/" title="JSON-LD 1.0">JSON-LD</a> into <a href="http://www.w3.org/RDF/">RDF</a> and implements expansion, compaction and framing API interfaces.</p>
 
 <p>Install with <code>gem install json-ld</code></p>
 
-<h2>Examples</h2>
+<h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
 
 <pre><code>require 'rubygems'
 require 'json/ld'
 </code></pre>
 
-<h3>Expand a Document</h3>
+<h3>
+<a name="expand-a-document" class="anchor" href="#expand-a-document"><span class="octicon octicon-link"></span></a>Expand a Document</h3>
 
-<pre><code>input = {
+<pre><code>input = JSON.parse %({
   "@context": {
     "name": "http://xmlns.com/foaf/0.1/name",
     "homepage": "http://xmlns.com/foaf/0.1/homepage",
@@ -58,7 +65,7 @@ require 'json/ld'
   "name": "Manu Sporny",
   "homepage": "http://manu.sporny.org/",
   "avatar": "http://twitter.com/account/profile_image/manusporny"
-}
+})
 JSON::LD::API.expand(input) =&gt;
 
 [{
@@ -68,28 +75,29 @@ JSON::LD::API.expand(input) =&gt;
 }]
 </code></pre>
 
-<h3>Compact a Document</h3>
+<h3>
+<a name="compact-a-document" class="anchor" href="#compact-a-document"><span class="octicon octicon-link"></span></a>Compact a Document</h3>
 
-<pre><code>input = [{
+<pre><code>input = JSON.parse %([{
     "http://xmlns.com/foaf/0.1/name": ["Manu Sporny"],
-    "http://xmlns.com/foaf/0.1/homepage": ["http://manu.sporny.org/"],
-    "http://xmlns.com/foaf/0.1/avatar": ["http://twitter.com/account/profile_image/manusporny"]
-}]
+    "http://xmlns.com/foaf/0.1/homepage": [{"@id": "http://manu.sporny.org/"}],
+    "http://xmlns.com/foaf/0.1/avatar": [{"@id": "http://twitter.com/account/profile_image/manusporny"}]
+}])
 
-context = {
+context = JSON.parse(%({
   "@context": {
     "name": "http://xmlns.com/foaf/0.1/name",
-    "homepage": "http://xmlns.com/foaf/0.1/homepage",
-    "avatar": "http://xmlns.com/foaf/0.1/avatar"
+    "homepage": {"@id": "http://xmlns.com/foaf/0.1/homepage", "@type": "@id"},
+    "avatar": {"@id": "http://xmlns.com/foaf/0.1/avatar", "@type": "@id"}
   }
-}
+}))['@context']
 
 JSON::LD::API.compact(input, context) =&gt;
 {
     "@context": {
-        "avatar": "http://xmlns.com/foaf/0.1/avatar",
-        "homepage": "http://xmlns.com/foaf/0.1/homepage",
-        "name": "http://xmlns.com/foaf/0.1/name"
+      "name": "http://xmlns.com/foaf/0.1/name",
+      "homepage": {"@id": "http://xmlns.com/foaf/0.1/homepage", "@type": "@id"},
+      "avatar": {"@id": "http://xmlns.com/foaf/0.1/avatar", "@type": "@id"}
     },
     "avatar": "http://twitter.com/account/profile_image/manusporny",
     "homepage": "http://manu.sporny.org/",
@@ -97,9 +105,10 @@ JSON::LD::API.compact(input, context) =&gt;
 }
 </code></pre>
 
-<h3>Frame a Document</h3>
+<h3>
+<a name="frame-a-document" class="anchor" href="#frame-a-document"><span class="octicon octicon-link"></span></a>Frame a Document</h3>
 
-<pre><code>input = {
+<pre><code>input = JSON.parse %({
   "@context": {
     "Book":         "http://example.org/vocab#Book",
     "Chapter":      "http://example.org/vocab#Chapter",
@@ -128,9 +137,9 @@ JSON::LD::API.compact(input, context) =&gt;
     "description": "An introductory chapter on The Republic.",
     "title": "The Introduction"
   }]
-}
+})
 
-frame = {
+frame = JSON.parse %({
   "@context": {
     "Book":         "http://example.org/vocab#Book",
     "Chapter":      "http://example.org/vocab#Chapter",
@@ -147,8 +156,9 @@ frame = {
       "@type": "Chapter"
     }
   }
-}
-JSON::LD.frame(input, frame) =&gt;
+})
+
+JSON::LD::API.frame(input, frame) =&gt;
 {
   "@context": {
     "Book": "http://example.org/vocab#Book",
@@ -180,9 +190,10 @@ JSON::LD.frame(input, frame) =&gt;
 }
 </code></pre>
 
-<h3>Turn JSON-LD into RDF (Turtle)</h3>
+<h3>
+<a name="turn-json-ld-into-rdf-turtle" class="anchor" href="#turn-json-ld-into-rdf-turtle"><span class="octicon octicon-link"></span></a>Turn JSON-LD into RDF (Turtle)</h3>
 
-<pre><code>input = {
+<pre><code>input = JSON.parse %({
   "@context": {
     "":       "http://manu.sporny.org/",
     "foaf":   "http://xmlns.com/foaf/0.1/"
@@ -191,9 +202,12 @@ JSON::LD.frame(input, frame) =&gt;
   "@type":          "foaf:Person",
   "foaf:name":      "Joe Bob",
   "foaf:nick":      { "@list": [ "joe", "bob", "jaybe" ] }
-}
+})
 
-JSON::LD::API.toRDF(input) =&gt;
+graph = RDF::Graph.new &lt;&lt; JSON::LD::API.toRdf(input)
+
+require 'rdf/turtle'
+graph.dump(:ttl, :prefixes =&gt; {:foaf =&gt; "http://xmlns.com/foaf/0.1/"})
 @prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
 
 &lt;http://example.org/people#joebob&gt; a foaf:Person;
@@ -201,41 +215,48 @@ JSON::LD::API.toRDF(input) =&gt;
    foaf:nick ("joe" "bob" "jaybe") .
 </code></pre>
 
-<h3>Turn RDF into JSON-LD</h3>
+<h3>
+<a name="turn-rdf-into-json-ld" class="anchor" href="#turn-rdf-into-json-ld"><span class="octicon octicon-link"></span></a>Turn RDF into JSON-LD</h3>
 
-<pre><code>input =
-@prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
+<pre><code>require 'rdf/turtle'
+input = RDF::Graph.new &lt;&lt; RDF::Turtle::Reader.new(%(
+  @prefix foaf: &lt;http://xmlns.com/foaf/0.1/&gt; .
 
-&lt;http://manu.sporny.org/#me&gt; a foaf:Person;
-   foaf:knows [ a foaf:Person;
-     foaf:name "Gregg Kellogg"];
-   foaf:name "Manu Sporny" .
+  &lt;http://manu.sporny.org/#me&gt; a foaf:Person;
+     foaf:knows [ a foaf:Person;
+       foaf:name "Gregg Kellogg"];
+     foaf:name "Manu Sporny" .
+))
 
-context =
-{
+context = JSON.parse %({
   "@context": {
     "":       "http://manu.sporny.org/",
     "foaf":   "http://xmlns.com/foaf/0.1/"
   }
-}
+})
 
-JSON::LD::fromRDF(input, context) =&gt;
-{
-  "@context": {
-    "":       "http://manu.sporny.org/",
-    "foaf":   "http://xmlns.com/foaf/0.1/"
-  },
-  "@id":       ":#me",
-  "@type":          "foaf:Person",
-  "foaf:name":      "Manu Sporny",
-  "foaf:knows": {
-    "@type":          "foaf:Person",
-    "foaf:name":      "Gregg Kellogg"
-  }
-}
+compacted = nil
+JSON::LD::API::fromRdf(input) do |expanded|
+  compacted = JSON::LD::API.compact(expanded, context['@context'])
+end
+compacted =&gt;
+  [
+    {
+      "@id": "_:g70265766605380",
+      "@type": ["http://xmlns.com/foaf/0.1/Person"],
+      "http://xmlns.com/foaf/0.1/name": [{"@value": "Gregg Kellogg"}]
+    },
+    {
+      "@id": "http://manu.sporny.org/#me",
+      "@type": ["http://xmlns.com/foaf/0.1/Person"],
+      "http://xmlns.com/foaf/0.1/knows": [{"@id": "_:g70265766605380"}],
+      "http://xmlns.com/foaf/0.1/name": [{"@value": "Manu Sporny"}]
+    }
+  ]
 </code></pre>
 
-<h2>RDF Reader and Writer</h2>
+<h2>
+<a name="rdf-reader-and-writer" class="anchor" href="#rdf-reader-and-writer"><span class="octicon octicon-link"></span></a>RDF Reader and Writer</h2>
 
 <p>{JSON::LD} also acts as a normal RDF reader and writer, using the standard RDF.rb reader/writer interfaces:</p>
 
@@ -243,11 +264,26 @@ JSON::LD::fromRDF(input, context) =&gt;
 graph.dump(:jsonld, :standard_prefixes =&gt; true)
 </code></pre>
 
-<h2>Documentation</h2>
+<p><code>RDF::GRAPH#dump</code> can also take a <code>:context</code> option to use a separately defined context</p>
 
-<p>Full documentation available on <a href="http://rubydoc.info/gems/json-ld/file/README.markdown">RubyDoc</a></p>
+<h2>
+<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
 
-<h3>Principle Classes</h3>
+<p>Full documentation available on <a href="http://rubydoc.info/gems/json-ld/file/README.md">RubyDoc</a></p>
+
+<h2>
+<a name="differences-from-json-ld-api" class="anchor" href="#differences-from-json-ld-api"><span class="octicon octicon-link"></span></a>Differences from <a href="http://www.w3.org/TR/json-ld-api/" title="JSON-LD 1.0 Processing Algorithms and API">JSON-LD API</a>
+</h2>
+
+<p>The specified JSON-LD API is based on a WebIDL definition implementing <a href="http://dom.spec.whatwg.org/#promises">Promises</a> intended for use within a browser.
+This version implements a more Ruby-like variation of this API without the use
+of promises or callback arguments, preferring Ruby blocks. All API methods
+execute synchronously, so that the return from a method can typically be used as well as a block.</p>
+
+<p>Note, the API method signatures differed in versions before 1.0, in that they also had a callback parameter. And 1.0.6 has some other minor method signature differences than previous versions. This should be the only exception to the use of semantic versioning.</p>
+
+<h3>
+<a name="principal-classes" class="anchor" href="#principal-classes"><span class="octicon octicon-link"></span></a>Principal Classes</h3>
 
 <ul>
 <li>{JSON::LD}
@@ -255,25 +291,27 @@ graph.dump(:jsonld, :standard_prefixes =&gt; true)
 <ul>
 <li>{JSON::LD::API}</li>
 <li>{JSON::LD::Compact}</li>
-<li>{JSON::LD::EvaluationContext}</li>
+<li>{JSON::LD::Context}</li>
 <li>{JSON::LD::Format}</li>
 <li>{JSON::LD::Frame}</li>
-<li>{JSON::LD::FromTriples}</li>
+<li>{JSON::LD::FromRDF}</li>
 <li>{JSON::LD::Reader}</li>
-<li>{JSON::LD::Triples}</li>
+<li>{JSON::LD::ToRDF}</li>
 <li>{JSON::LD::Writer}</li>
 </ul>
 </li>
-</ul><h2>Dependencies</h2>
+</ul><h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
 
 <ul>
 <li>
-<a href="http://ruby-lang.org/">Ruby</a> (&gt;= 1.8.7) or (&gt;= 1.8.1 with <a href="http://rubygems.org/gems/backports">Backports</a>)</li>
+<a href="http://ruby-lang.org/">Ruby</a> (&gt;= 1.9.2)</li>
 <li>
-<a href="http://rubygems.org/gems/rdf">RDF.rb</a> (&gt;= 0.3.4)</li>
+<a href="http://rubygems.org/gems/rdf">RDF.rb</a> (&gt;= 1.0)</li>
 <li>
-<a href="https://rubygems.org/gems/json">JSON</a> (&gt;= 1.5.1)</li>
-</ul><h2>Installation</h2>
+<a href="https://rubygems.org/gems/json">JSON</a> (&gt;= 1.5)</li>
+</ul><h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
 
 <p>The recommended installation method is via <a href="http://rubygems.org/">RubyGems</a>.
 To install the latest official release of the <code>JSON-LD</code> gem, do:</p>
@@ -281,24 +319,28 @@ To install the latest official release of the <code>JSON-LD</code> gem, do:</p>
 <pre><code>% [sudo] gem install json-ld
 </code></pre>
 
-<h2>Download</h2>
+<h2>
+<a name="download" class="anchor" href="#download"><span class="octicon octicon-link"></span></a>Download</h2>
 
 <p>To get a local working copy of the development repository, do:</p>
 
 <pre><code>% git clone git://github.com/ruby-rdf/json-ld.git
 </code></pre>
 
-<h2>Mailing List</h2>
+<h2>
+<a name="mailing-list" class="anchor" href="#mailing-list"><span class="octicon octicon-link"></span></a>Mailing List</h2>
 
 <ul>
 <li><a href="http://lists.w3.org/Archives/Public/public-rdf-ruby/">http://lists.w3.org/Archives/Public/public-rdf-ruby/</a></li>
-</ul><h2>Author</h2>
+</ul><h2>
+<a name="author" class="anchor" href="#author"><span class="octicon octicon-link"></span></a>Author</h2>
 
 <ul>
 <li>
 <a href="http://github.com/gkellogg">Gregg Kellogg</a> - <a href="http://kellogg-assoc.com/">http://kellogg-assoc.com/</a>
 </li>
-</ul><h2>Contributing</h2>
+</ul><h2>
+<a name="contributing" class="anchor" href="#contributing"><span class="octicon octicon-link"></span></a>Contributing</h2>
 
 <ul>
 <li>Do your best to adhere to the existing coding conventions and idioms.</li>
@@ -312,7 +354,8 @@ list in the the <code>README</code>. Alphabetical order applies.</li>
 <li>Do note that in order for us to merge any non-trivial changes (as a rule
 of thumb, additions larger than about 15 lines of code), we need an
 explicit <a href="http://lists.w3.org/Archives/Public/public-rdf-ruby/2010May/0013.html">public domain dedication</a> on record from you.</li>
-</ul><h2>License</h2>
+</ul><h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
 
 <p>This is free and unencumbered public domain software. For more information,
 see <a href="http://unlicense.org/">http://unlicense.org/</a> or the accompanying {file:UNLICENSE} file.</p>
@@ -322,7 +365,7 @@ see <a href="http://unlicense.org/">http://unlicense.org/</a> or the accompanyin
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Json-ld maintained by <a href="https://github.com/gkellogg">gkellogg</a></p>
+        <p class="copyright">Json-ld maintained by <a href="https://github.com/ruby-rdf">ruby-rdf</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
