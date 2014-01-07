@@ -14,11 +14,29 @@ module JSON::LD
     end
 
     ##
-    # Initializes the RDF/JSON reader instance.
+    # Redirect for Streaming Reader
+    #
+    # @private
+    def self.new(input = nil, options = {}, &block)
+      klass = if options[:stream]
+        StreamingReader
+      else
+        self
+      end
+      reader = klass.allocate
+      reader.send(:initialize, input, options, &block)
+      reader
+    end
+
+    ##
+    # Initializes the JSON-LD reader instance.
     #
     # @param  [IO, File, String]       input
     # @param  [Hash{Symbol => Object}] options
     #   any additional options (see `RDF::Reader#initialize` and {JSON::LD::API.initialize})
+    # @option options [Boolean] :stream (false)
+    #   Assume that the document conforms to the JSON-LD Streaming Profile and
+    #   use an optimized reader which avoids separate expansion and flattening steps.
     # @yield  [reader] `self`
     # @yieldparam  [RDF::Reader] reader
     # @yieldreturn [void] ignored

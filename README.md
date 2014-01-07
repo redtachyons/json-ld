@@ -6,12 +6,22 @@
 [![Build Status](https://secure.travis-ci.org/ruby-rdf/json-ld.png?branch=master)](http://travis-ci.org/ruby-rdf/json-ld)
 
 ## Features
-
 JSON::LD parses and serializes [JSON-LD][] into [RDF][] and implements expansion, compaction and framing API interfaces.
 
 JSON::LD can now be used to create a _context_ from an RDFS/OWL definition, and optionally include a JSON-LD representation of the ontology itself. This is currently accessed through the `script/gen_context` script.
 
 Install with `gem install json-ld`
+
+### JSON-LD Streaming Profile
+This gem implements an optimized streaming reader used for generating RDF from large dataset dumps formatted as JSON-LD. Such documents must correspond to the JSON-LD Streaming Profile:
+
+* JSON Objects are serialized with keywords coming before other members in lexicographical order.
+* Flattened Document Form: documents all exist in [Flattened Document Form](http://json-ld.org/spec/latest/json-ld/#flattened-document-form) with object embedding prohibited.
+  As an extension, nodes with a common `@id` may be repeated.
+* The following keywords are prohibited in contexts and the body of the document:
+  * `@reverse`
+  * `@index`
+* `@context` appears only in the outer-most object(s), and must not be used within value objects.
 
 ## Examples
 
