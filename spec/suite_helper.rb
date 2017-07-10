@@ -160,6 +160,7 @@ module Fixtures
         else
           self.options.dup
         end
+        options = {validate: true}.merge(options)
 
         unless options[:specVersion] == "1.0"
           skip "not a 1.0 test" 
