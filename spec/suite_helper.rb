@@ -108,7 +108,7 @@ module Fixtures
       def options
         @options ||= begin
           opts = {documentLoader: Fixtures::SuiteTest.method(:documentLoader)}
-          {'specVersion' => "1.0"}.merge(property('option') || {}).each do |k, v|
+          {'specVersion' => "json-ld-1.0"}.merge(property('option') || {}).each do |k, v|
             opts[k.to_sym] = v
           end
           opts
@@ -162,7 +162,7 @@ module Fixtures
         end
         options = {validate: true}.merge(options)
 
-        unless options[:specVersion] == "1.0"
+        unless options[:specVersion] == "json-ld-1.0"
           skip "not a 1.0 test" 
           return
         end
